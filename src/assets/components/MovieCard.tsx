@@ -22,7 +22,7 @@ function MovieCard({ movie }: Props) {
   return (
     <div className="bg-white dark:bg-[#111] rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 w-full max-w-[280px] font-sans">
       {/* Poster */}
-      <div className="relative h-[360px] bg-[#0d0d1a] overflow-hidden group">
+      <div className="relative h-90 bg-[#0d0d1a] overflow-hidden group">
         <img
           src={
             movie.poster_path
