@@ -30,7 +30,7 @@ type ApiResponse = {
   results: Movie[];
 };
 
-function App(): JSX.Element {
+function App() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [moviesList, setMoviesList] = useState<Movie[]>([]);
