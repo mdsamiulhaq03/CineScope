@@ -1,7 +1,12 @@
 import React from "react";
 import searchLogo from "../search.svg";
 
-function Search({ searchTerm, setSearchTerm }: string) {
+type SearchProps = {
+  searchTerm: string;
+  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+};
+
+const Search = ({ searchTerm, setSearchTerm }: SearchProps) => {
   return (
     <div className="search">
       <div>
@@ -15,6 +20,6 @@ function Search({ searchTerm, setSearchTerm }: string) {
       </div>
     </div>
   );
-}
+};
 
 export default Search;
