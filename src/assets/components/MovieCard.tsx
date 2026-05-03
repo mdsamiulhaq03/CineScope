@@ -1,9 +1,23 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import noPoster from "../images/No-Poster.png";
 
-function MovieCard({ movie }) {
-  const [saved, setSaved] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+type Movie = {
+  id: number;
+  title: string;
+  overview: string;
+  poster_path: string | null;
+  original_language: string;
+  vote_average: number;
+  release_date: string;
+};
+
+type Props = {
+  movie: Movie;
+};
+
+function MovieCard({ movie }: Props) {
+  const [saved, setSaved] = useState<boolean>(false);
+  const [showDetails, setShowDetails] = useState<boolean>(false);
 
   return (
     <div className="bg-white dark:bg-[#111] rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 w-full max-w-[280px] font-sans">
