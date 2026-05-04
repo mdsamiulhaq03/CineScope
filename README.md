@@ -11,7 +11,11 @@ https://cinema-scope-ten.vercel.app/
 
 ## 📸 Preview
 
-![CineScope Preview](./preview.png)
+![CineScope Preview1](https://github.com/mdsamiulhaq03/CineScope/blob/25581cf8448f153c47a34d273f5aa93c0a822210/Movies1.png)
+
+![CineScope Preview2](https://github.com/mdsamiulhaq03/CineScope/blob/25581cf8448f153c47a34d273f5aa93c0a822210/Screenshot%202026-05-04%20140849.png)
+
+![CineScope Preview3](https://github.com/mdsamiulhaq03/CineScope/blob/25581cf8448f153c47a34d273f5aa93c0a822210/Screenshot%202026-05-04%20140905.png)
 
 ---
 
