@@ -1,9 +1,9 @@
 import Header from "./assets/components/Header";
 import Search from "./assets/components/Search";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { CircularProgress } from "@mui/material";
 import MovieCard from "./assets/components/MovieCard";
-
+import { useDebounce } from "react-use";
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
@@ -35,7 +35,15 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [moviesList, setMoviesList] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
 
+  useDebounce(
+    () => {
+      setDebouncedSearchTerm(searchTerm);
+    },
+    1000,
+    [searchTerm],
+  );
   const fetchMovies = async (query: string = "") => {
     setIsLoading(true);
     setErrorMessage("");
@@ -70,8 +78,8 @@ function App() {
   };
 
   useEffect(() => {
-    fetchMovies(searchTerm);
-  }, [searchTerm]);
+    fetchMovies(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
 
   return (
     <main>
