@@ -1,6 +1,6 @@
 import Header from "./assets/components/Header";
 import Search from "./assets/components/Search";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { CircularProgress } from "@mui/material";
 import MovieCard from "./assets/components/MovieCard";
 import { useDebounce } from "react-use";
