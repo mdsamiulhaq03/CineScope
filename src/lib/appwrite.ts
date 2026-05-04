@@ -24,18 +24,21 @@ export type Movie = {
   poster_path: string | null;
 };
 
-type MetricDoc = {
+export type MetricDoc = {
   $id: string;
   searchTerm: string;
   count: number;
   poster_url: string | null;
-  movie_id: string; // ✅ FIXED (string because Appwrite expects string)
+  movie_id: string;
 };
 
 // --------------------
 // UPDATE SEARCH COUNT
 // --------------------
-export const updateSearchCount = async (searchTerm: string, movie: Movie) => {
+export const updateSearchCount = async (
+  searchTerm: string,
+  movie: Movie,
+): Promise<void> => {
   try {
     if (!searchTerm.trim()) return;
 
@@ -44,16 +47,16 @@ export const updateSearchCount = async (searchTerm: string, movie: Movie) => {
     ]);
 
     if (result.documents.length > 0) {
-      const doc = result.documents[0] as MetricDoc;
+      const doc = result.documents[0] as unknown as MetricDoc;
 
       await databases.updateDocument(DATABASE_ID, COLLECTION_ID, doc.$id, {
-        count: Number(doc.count ?? 0) + 1,
+        count: (doc.count ?? 0) + 1,
       });
     } else {
       await databases.createDocument(DATABASE_ID, COLLECTION_ID, ID.unique(), {
         searchTerm: searchTerm.trim(),
         count: 1,
-        movie_id: String(movie.id), // ✅ FIX IMPORTANT
+        movie_id: String(movie.id),
         poster_url: movie.poster_path
           ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
           : null,
@@ -64,13 +67,23 @@ export const updateSearchCount = async (searchTerm: string, movie: Movie) => {
   }
 };
 
-export const getTrendingMovies = async () => {
+// --------------------
+// GET TRENDING MOVIES (FIXED)
+// --------------------
+export const getTrendingMovies = async (): Promise<MetricDoc[]> => {
   try {
     const result = await databases.listDocuments(DATABASE_ID, COLLECTION_ID, [
       Query.limit(5),
       Query.orderDesc("count"),
     ]);
-    return result.documents;
+
+    return result.documents.map((doc) => ({
+      $id: doc.$id,
+      searchTerm: doc.searchTerm,
+      count: doc.count,
+      poster_url: doc.poster_url,
+      movie_id: doc.movie_id,
+    })) as MetricDoc[];
   } catch (error) {
     console.error("getTrendingMovies error:", error);
     return [];

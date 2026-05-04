@@ -47,7 +47,7 @@ type TrendingMovie = {
 };
 
 // --------------------
-// APP COMPONENT
+// APP
 // --------------------
 function App() {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -57,9 +57,6 @@ function App() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
   const [trendingMovies, setTrendingMovies] = useState<TrendingMovie[]>([]);
 
-  // --------------------
-  // Debounce search input
-  // --------------------
   useDebounce(
     () => {
       setDebouncedSearchTerm(searchTerm);
@@ -69,7 +66,7 @@ function App() {
   );
 
   // --------------------
-  // Fetch movies
+  // FETCH MOVIES
   // --------------------
   const fetchMovies = async (query: string = "") => {
     setIsLoading(true);
@@ -77,20 +74,17 @@ function App() {
 
     try {
       const endpoint = query
-        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(
-            query,
-          )}&include_adult=true&language=en-US&page=1`
+        ? `${API_BASE_URL}/search/movie?query=${encodeURIComponent(query)}&include_adult=true&language=en-US&page=1`
         : `${API_BASE_URL}/discover/movie?include_adult=true&include_video=false&language=en-US&page=1&sort_by=popularity.desc`;
 
       const response = await fetch(endpoint, API_OPTIONS);
 
-      if (!response.ok) {
+      if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
-      }
 
       const data: ApiResponse = await response.json();
 
-      if (!data.results || data.results.length === 0) {
+      if (!data.results?.length) {
         setMoviesList([]);
         setErrorMessage("No results found");
         return;
@@ -99,7 +93,7 @@ function App() {
       setMoviesList(data.results);
 
       // --------------------
-      // Appwrite tracking + refresh trending
+      // APPWRITE TRACKING
       // --------------------
       if (query.trim()) {
         const validMovie = data.results.find((m) => m.poster_path);
@@ -107,14 +101,14 @@ function App() {
         if (validMovie) {
           try {
             await updateSearchCount(query.trim(), validMovie);
-            await loadTrendingMovies(); // 🔥 auto refresh trending
+            await loadTrendingMovies();
           } catch (err) {
             console.log("Appwrite update failed:", err);
           }
         }
       }
     } catch (error) {
-      console.error("Error fetching movies:", error);
+      console.error(error);
       setErrorMessage("An error occurred while fetching movies.");
     } finally {
       setIsLoading(false);
@@ -122,20 +116,17 @@ function App() {
   };
 
   // --------------------
-  // Trending movies
+  // TRENDING
   // --------------------
   const loadTrendingMovies = async () => {
     try {
       const movies = await getTrendingMovies();
-      setTrendingMovies(movies);
+      setTrendingMovies(movies as TrendingMovie[]);
     } catch (error) {
-      console.error("Error loading trending movies:", error);
+      console.error("Trending error:", error);
     }
   };
 
-  // --------------------
-  // Effects
-  // --------------------
   useEffect(() => {
     fetchMovies(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
@@ -155,7 +146,7 @@ function App() {
 
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
-          {/* ---------------- Trending Section ---------------- */}
+          {/* TRENDING */}
           {trendingMovies.length > 0 && (
             <section className="trending">
               <h2 className="mb-4">Top Searched Movies</h2>
@@ -177,7 +168,7 @@ function App() {
             </section>
           )}
 
-          {/* ---------------- Movies Section ---------------- */}
+          {/* MOVIES */}
           <section className="all-movies mt-10">
             <h2 className="mb-6">All Movies</h2>
 
