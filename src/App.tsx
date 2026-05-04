@@ -4,6 +4,11 @@ import { useState, useEffect } from "react";
 import { CircularProgress } from "@mui/material";
 import MovieCard from "./assets/components/MovieCard";
 import { useDebounce } from "react-use";
+import { updateSearchCount, getTrendingMovies } from "./lib/appwrite";
+
+// --------------------
+// API CONFIG
+// --------------------
 const API_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
@@ -15,6 +20,9 @@ const API_OPTIONS = {
   },
 };
 
+// --------------------
+// TYPES
+// --------------------
 type Movie = {
   id: number;
   title: string;
@@ -30,13 +38,28 @@ type ApiResponse = {
   results: Movie[];
 };
 
+type TrendingMovie = {
+  $id: string;
+  searchTerm: string;
+  count: number;
+  poster_url: string | null;
+  movie_id: string;
+};
+
+// --------------------
+// APP COMPONENT
+// --------------------
 function App() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [moviesList, setMoviesList] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState<string>("");
+  const [trendingMovies, setTrendingMovies] = useState<TrendingMovie[]>([]);
 
+  // --------------------
+  // Debounce search input
+  // --------------------
   useDebounce(
     () => {
       setDebouncedSearchTerm(searchTerm);
@@ -44,6 +67,10 @@ function App() {
     1000,
     [searchTerm],
   );
+
+  // --------------------
+  // Fetch movies
+  // --------------------
   const fetchMovies = async (query: string = "") => {
     setIsLoading(true);
     setErrorMessage("");
@@ -65,10 +92,27 @@ function App() {
 
       if (!data.results || data.results.length === 0) {
         setMoviesList([]);
-        throw new Error("No results found");
+        setErrorMessage("No results found");
+        return;
       }
 
       setMoviesList(data.results);
+
+      // --------------------
+      // Appwrite tracking + refresh trending
+      // --------------------
+      if (query.trim()) {
+        const validMovie = data.results.find((m) => m.poster_path);
+
+        if (validMovie) {
+          try {
+            await updateSearchCount(query.trim(), validMovie);
+            await loadTrendingMovies(); // 🔥 auto refresh trending
+          } catch (err) {
+            console.log("Appwrite update failed:", err);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error fetching movies:", error);
       setErrorMessage("An error occurred while fetching movies.");
@@ -77,17 +121,63 @@ function App() {
     }
   };
 
+  // --------------------
+  // Trending movies
+  // --------------------
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await getTrendingMovies();
+      setTrendingMovies(movies);
+    } catch (error) {
+      console.error("Error loading trending movies:", error);
+    }
+  };
+
+  // --------------------
+  // Effects
+  // --------------------
   useEffect(() => {
     fetchMovies(debouncedSearchTerm);
   }, [debouncedSearchTerm]);
 
+  useEffect(() => {
+    loadTrendingMovies();
+  }, []);
+
+  // --------------------
+  // UI
+  // --------------------
   return (
     <main>
       <div className="pattern">
         <div className="wrapper">
           <Header />
+
           <Search searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
+          {/* ---------------- Trending Section ---------------- */}
+          {trendingMovies.length > 0 && (
+            <section className="trending">
+              <h2 className="mb-4">Top Searched Movies</h2>
+
+              <ul>
+                {trendingMovies.map((movie, index) => (
+                  <li key={movie.$id} className="flex items-center gap-3">
+                    <p>{index + 1}</p>
+
+                    <img
+                      src={
+                        movie.poster_url || "https://via.placeholder.com/50x75"
+                      }
+                      alt={movie.searchTerm}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* ---------------- Movies Section ---------------- */}
           <section className="all-movies mt-10">
             <h2 className="mb-6">All Movies</h2>
 
